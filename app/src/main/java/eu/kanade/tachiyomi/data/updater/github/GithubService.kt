@@ -2,15 +2,13 @@ package eu.kanade.tachiyomi.data.updater.github
 
 import eu.kanade.tachiyomi.network.NetworkHelper
 import retrofit2.Retrofit
-import retrofit2.adapter.rxjava.RxJavaCallAdapterFactory
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
-import rx.Observable
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
 
 /**
- * Used to connect with the Github API.
+ * Used to connect with the GitHub API.
  */
 interface GithubService {
 
@@ -19,7 +17,6 @@ interface GithubService {
             val restAdapter = Retrofit.Builder()
                     .baseUrl("https://api.github.com")
                     .addConverterFactory(GsonConverterFactory.create())
-                    .addCallAdapterFactory(RxJavaCallAdapterFactory.create())
                     .client(Injekt.get<NetworkHelper>().client)
                     .build()
 
@@ -28,6 +25,5 @@ interface GithubService {
     }
 
     @GET("/repos/inorichi/tachiyomi/releases/latest")
-    fun getLatestVersion(): Observable<GithubRelease>
-
+    suspend fun getLatestVersion(): GithubRelease
 }

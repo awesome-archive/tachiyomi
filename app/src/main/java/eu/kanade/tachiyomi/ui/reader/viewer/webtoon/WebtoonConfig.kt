@@ -2,7 +2,7 @@ package eu.kanade.tachiyomi.ui.reader.viewer.webtoon
 
 import com.f2prateek.rx.preferences.Preference
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
-import eu.kanade.tachiyomi.util.addTo
+import eu.kanade.tachiyomi.util.lang.addTo
 import rx.subscriptions.CompositeSubscription
 import uy.kohesive.injekt.Injekt
 import uy.kohesive.injekt.api.get
@@ -31,27 +31,39 @@ class WebtoonConfig(preferences: PreferencesHelper = Injekt.get()) {
     var imageCropBorders = false
         private set
 
+    var padPagesVert = false
+        private set
+
     var doubleTapAnimDuration = 500
+        private set
+
+    var alwaysShowChapterTransition = true
         private set
 
     init {
         preferences.readWithTapping()
-            .register({ tappingEnabled = it })
+                .register({ tappingEnabled = it })
 
         preferences.readWithLongTap()
-            .register({ longTapEnabled = it })
+                .register({ longTapEnabled = it })
 
         preferences.cropBordersWebtoon()
-            .register({ imageCropBorders = it }, { imagePropertyChangedListener?.invoke() })
+                .register({ imageCropBorders = it }, { imagePropertyChangedListener?.invoke() })
+
+        preferences.padPagesVertWebtoon()
+                .register({ padPagesVert = it }, { imagePropertyChangedListener?.invoke() })
 
         preferences.doubleTapAnimSpeed()
-            .register({ doubleTapAnimDuration = it })
+                .register({ doubleTapAnimDuration = it })
 
         preferences.readWithVolumeKeys()
-            .register({ volumeKeysEnabled = it })
+                .register({ volumeKeysEnabled = it })
 
         preferences.readWithVolumeKeysInverted()
-            .register({ volumeKeysInverted = it })
+                .register({ volumeKeysInverted = it })
+
+        preferences.alwaysShowChapterTransition()
+                .register({ alwaysShowChapterTransition = it })
     }
 
     fun unsubscribe() {
@@ -59,16 +71,15 @@ class WebtoonConfig(preferences: PreferencesHelper = Injekt.get()) {
     }
 
     private fun <T> Preference<T>.register(
-            valueAssignment: (T) -> Unit,
-            onChanged: (T) -> Unit = {}
+        valueAssignment: (T) -> Unit,
+        onChanged: (T) -> Unit = {}
     ) {
         asObservable()
-            .doOnNext(valueAssignment)
-            .skip(1)
-            .distinctUntilChanged()
-            .doOnNext(onChanged)
-            .subscribe()
-            .addTo(subscriptions)
+                .doOnNext(valueAssignment)
+                .skip(1)
+                .distinctUntilChanged()
+                .doOnNext(onChanged)
+                .subscribe()
+                .addTo(subscriptions)
     }
-
 }

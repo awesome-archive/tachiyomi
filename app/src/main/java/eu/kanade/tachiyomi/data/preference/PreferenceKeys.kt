@@ -5,7 +5,11 @@ package eu.kanade.tachiyomi.data.preference
  */
 object PreferenceKeys {
 
-    const val theme = "pref_theme_key"
+    const val themeMode = "pref_theme_mode_key"
+
+    const val themeLight = "pref_theme_light_key"
+
+    const val themeDark = "pref_theme_dark_key"
 
     const val rotation = "pref_rotation_type_key"
 
@@ -18,6 +22,8 @@ object PreferenceKeys {
     const val trueColor = "pref_true_color_key"
 
     const val fullscreen = "fullscreen"
+
+    const val cutoutShort = "cutout_short"
 
     const val keepScreenOn = "pref_keep_screen_on_key"
 
@@ -42,6 +48,8 @@ object PreferenceKeys {
     const val cropBorders = "crop_borders"
 
     const val cropBordersWebtoon = "crop_borders_webtoon"
+
+    const val padPagesVertWebtoon = "pad_pages_vert_webtoon"
 
     const val readWithTapping = "reader_tap"
 
@@ -101,6 +109,16 @@ object PreferenceKeys {
 
     const val startScreen = "start_screen"
 
+    const val useBiometricLock = "use_biometric_lock"
+
+    const val lockAppAfter = "lock_app_after"
+
+    const val lastAppUnlock = "last_app_unlock"
+
+    const val secureScreen = "secure_screen"
+
+    const val hideNotificationContent = "hide_notification_content"
+
     const val downloadNew = "download_new"
 
     const val downloadNewCategories = "download_new_categories"
@@ -109,24 +127,19 @@ object PreferenceKeys {
 
     const val lang = "app_language"
 
+    const val dateFormat = "app_date_format"
+
     const val defaultCategory = "default_category"
 
     const val skipRead = "skip_read"
 
     const val downloadBadge = "display_download_badge"
 
-    @Deprecated("Use the preferences of the source")
-    fun sourceUsername(sourceId: Long) = "pref_source_username_$sourceId"
-
-    @Deprecated("Use the preferences of the source")
-    fun sourcePassword(sourceId: Long) = "pref_source_password_$sourceId"
-
-    fun sourceSharedPref(sourceId: Long) = "source_$sourceId"
+    const val alwaysShowChapterTransition = "always_show_chapter_transition"
 
     fun trackUsername(syncId: Int) = "pref_mangasync_username_$syncId"
 
     fun trackPassword(syncId: Int) = "pref_mangasync_password_$syncId"
 
     fun trackToken(syncId: Int) = "track_token_$syncId"
-
 }

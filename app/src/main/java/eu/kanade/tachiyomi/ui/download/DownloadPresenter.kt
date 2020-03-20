@@ -9,16 +9,12 @@ import rx.Observable
 import rx.android.schedulers.AndroidSchedulers
 import timber.log.Timber
 import uy.kohesive.injekt.injectLazy
-import java.util.*
 
 /**
  * Presenter of [DownloadController].
  */
 class DownloadPresenter : BasePresenter<DownloadController>() {
 
-    /**
-     * Download manager.
-     */
     val downloadManager: DownloadManager by injectLazy()
 
     /**
@@ -32,10 +28,10 @@ class DownloadPresenter : BasePresenter<DownloadController>() {
 
         downloadQueue.getUpdatedObservable()
                 .observeOn(AndroidSchedulers.mainThread())
-                .map { ArrayList(it) }
-                .subscribeLatestCache(DownloadController::onNextDownloads, { _, error ->
+                .map { it.map(::DownloadItem) }
+                .subscribeLatestCache(DownloadController::onNextDownloads) { _, error ->
                     Timber.e(error)
-                })
+                }
     }
 
     fun getDownloadStatusObservable(): Observable<Download> {
@@ -62,4 +58,11 @@ class DownloadPresenter : BasePresenter<DownloadController>() {
         downloadManager.clearQueue()
     }
 
+    fun reorder(downloads: List<Download>) {
+        downloadManager.reorderQueue(downloads)
+    }
+
+    fun cancelDownload(download: Download) {
+        downloadManager.deletePendingDownload(download)
+    }
 }

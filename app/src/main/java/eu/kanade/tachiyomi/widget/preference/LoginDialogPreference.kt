@@ -4,6 +4,7 @@ import android.app.Dialog
 import android.os.Bundle
 import android.text.method.PasswordTransformationMethod
 import android.view.View
+import androidx.annotation.StringRes
 import com.afollestad.materialdialogs.MaterialDialog
 import com.bluelinelabs.conductor.ControllerChangeHandler
 import com.bluelinelabs.conductor.ControllerChangeType
@@ -12,11 +13,19 @@ import eu.kanade.tachiyomi.R
 import eu.kanade.tachiyomi.data.preference.PreferencesHelper
 import eu.kanade.tachiyomi.ui.base.controller.DialogController
 import eu.kanade.tachiyomi.widget.SimpleTextWatcher
-import kotlinx.android.synthetic.main.pref_account_login.view.*
+import kotlinx.android.synthetic.main.pref_account_login.view.login
+import kotlinx.android.synthetic.main.pref_account_login.view.password
+import kotlinx.android.synthetic.main.pref_account_login.view.show_password
+import kotlinx.android.synthetic.main.pref_account_login.view.username_label
 import rx.Subscription
 import uy.kohesive.injekt.injectLazy
 
-abstract class LoginDialogPreference(bundle: Bundle? = null) : DialogController(bundle) {
+abstract class LoginDialogPreference(
+    @StringRes private val titleRes: Int? = null,
+    private val titleFormatArgs: Any? = null,
+    @StringRes private val usernameLabelRes: Int? = null,
+    bundle: Bundle? = null
+) : DialogController(bundle) {
 
     var v: View? = null
         private set
@@ -25,11 +34,16 @@ abstract class LoginDialogPreference(bundle: Bundle? = null) : DialogController(
 
     var requestSubscription: Subscription? = null
 
-    override fun onCreateDialog(savedState: Bundle?): Dialog {
-        val dialog = MaterialDialog.Builder(activity!!)
+    override fun onCreateDialog(savedViewState: Bundle?): Dialog {
+        var dialogBuilder = MaterialDialog.Builder(activity!!)
                 .customView(R.layout.pref_account_login, false)
                 .negativeText(android.R.string.cancel)
-                .build()
+
+        if (titleRes != null) {
+            dialogBuilder = dialogBuilder.title(activity!!.getString(titleRes, titleFormatArgs))
+        }
+
+        val dialog = dialogBuilder.build()
 
         onViewCreated(dialog.view)
 
@@ -43,6 +57,10 @@ abstract class LoginDialogPreference(bundle: Bundle? = null) : DialogController(
                     password.transformationMethod = null
                 else
                     password.transformationMethod = PasswordTransformationMethod()
+            }
+
+            if (usernameLabelRes != null) {
+                username_label.hint = context.getString(usernameLabelRes)
             }
 
             login.setMode(ActionProcessButton.Mode.ENDLESS)
@@ -60,7 +78,6 @@ abstract class LoginDialogPreference(bundle: Bundle? = null) : DialogController(
                 }
             })
         }
-
     }
 
     override fun onChangeStarted(handler: ControllerChangeHandler, type: ControllerChangeType) {
@@ -77,5 +94,4 @@ abstract class LoginDialogPreference(bundle: Bundle? = null) : DialogController(
     protected abstract fun checkLogin()
 
     protected abstract fun setCredentialsOnView(view: View)
-
 }

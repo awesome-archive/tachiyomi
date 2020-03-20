@@ -35,9 +35,8 @@ object LibraryUpdateRanker {
      */
     fun lexicographicRanking(): Comparator<Manga> {
         return Comparator { mangaFirst: Manga,
-                                   mangaSecond: Manga ->
+                            mangaSecond: Manga ->
             compareValues(mangaFirst.title, mangaSecond.title)
         }
     }
-
 }

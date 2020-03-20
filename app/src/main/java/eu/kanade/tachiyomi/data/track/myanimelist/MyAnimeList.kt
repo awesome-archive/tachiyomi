@@ -7,12 +7,11 @@ import eu.kanade.tachiyomi.data.database.models.Track
 import eu.kanade.tachiyomi.data.preference.getOrDefault
 import eu.kanade.tachiyomi.data.track.TrackService
 import eu.kanade.tachiyomi.data.track.model.TrackSearch
-import okhttp3.HttpUrl
+import okhttp3.HttpUrl.Companion.toHttpUrlOrNull
 import rx.Completable
 import rx.Observable
-import java.lang.Exception
 
-class Myanimelist(private val context: Context, id: Int) : TrackService(id) {
+class MyAnimeList(private val context: Context, id: Int) : TrackService(id) {
 
     companion object {
         const val READING = 1
@@ -30,14 +29,18 @@ class Myanimelist(private val context: Context, id: Int) : TrackService(id) {
     }
 
     private val interceptor by lazy { MyAnimeListInterceptor(this) }
-    private val api by lazy { MyanimelistApi(client, interceptor) }
+    private val api by lazy { MyAnimeListApi(client, interceptor) }
 
     override val name: String
         get() = "MyAnimeList"
 
-    override fun getLogo() = R.drawable.mal
+    override fun getLogo() = R.drawable.tracker_mal
 
-    override fun getLogoColor() = Color.rgb(46, 81, 162)
+    override fun getLogoColor() = Color.rgb(0x2E, 0x51, 0xA2)
+
+    override fun getStatusList(): List<Int> {
+        return listOf(READING, COMPLETED, ON_HOLD, DROPPED, PLAN_TO_READ)
+    }
 
     override fun getStatus(status: Int): String = with(context) {
         when (status) {
@@ -50,9 +53,7 @@ class Myanimelist(private val context: Context, id: Int) : TrackService(id) {
         }
     }
 
-    override fun getStatusList(): List<Int> {
-        return listOf(READING, COMPLETED, ON_HOLD, DROPPED, PLAN_TO_READ)
-    }
+    override fun getCompletionStatus(): Int = COMPLETED
 
     override fun getScoreList(): List<String> {
         return IntRange(0, 10).map(Int::toString)
@@ -67,10 +68,6 @@ class Myanimelist(private val context: Context, id: Int) : TrackService(id) {
     }
 
     override fun update(track: Track): Observable<Track> {
-        if (track.total_chapters != 0 && track.last_chapter_read == track.total_chapters) {
-            track.status = COMPLETED
-        }
-
         return api.updateLibManga(track)
     }
 
@@ -112,11 +109,7 @@ class Myanimelist(private val context: Context, id: Int) : TrackService(id) {
                 .toCompletable()
     }
 
-    // Attempt to login again if cookies have been cleared but credentials are still filled
-    fun ensureLoggedIn() {
-        if (isAuthorized) return
-        if (!isLogged) throw Exception("MAL Login Credentials not found")
-
+    fun refreshLogin() {
         val username = getUsername()
         val password = getPassword()
         logout()
@@ -131,10 +124,18 @@ class Myanimelist(private val context: Context, id: Int) : TrackService(id) {
         }
     }
 
+    // Attempt to login again if cookies have been cleared but credentials are still filled
+    fun ensureLoggedIn() {
+        if (isAuthorized) return
+        if (!isLogged) throw Exception("MAL Login Credentials not found")
+
+        refreshLogin()
+    }
+
     override fun logout() {
         super.logout()
         preferences.trackToken(this).delete()
-        networkService.cookieManager.remove(HttpUrl.parse(BASE_URL)!!)
+        networkService.cookieManager.remove(BASE_URL.toHttpUrlOrNull()!!)
     }
 
     val isAuthorized: Boolean
@@ -148,13 +149,12 @@ class Myanimelist(private val context: Context, id: Int) : TrackService(id) {
 
     private fun checkCookies(): Boolean {
         var ckCount = 0
-        val url = HttpUrl.parse(BASE_URL)!!
+        val url = BASE_URL.toHttpUrlOrNull()!!
         for (ck in networkService.cookieManager.get(url)) {
-            if (ck.name() == USER_SESSION_COOKIE || ck.name() == LOGGED_IN_COOKIE)
+            if (ck.name == USER_SESSION_COOKIE || ck.name == LOGGED_IN_COOKIE)
                 ckCount++
         }
 
         return ckCount == 2
     }
-
 }
